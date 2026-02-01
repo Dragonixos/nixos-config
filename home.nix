@@ -28,6 +28,18 @@
     git-lfs
     gh  # GitHub CLI
 
+    # AI & Cloud CLIs
+    codex  # OpenAI Codex terminal coding agent
+    google-cloud-sdk  # gcloud CLI
+    gemini-cli  # Google Gemini AI terminal agent
+
+    # Terminal & Editors
+    terminator  # Terminal emulator with tiling
+    neovim  # Modern Vim fork
+
+    # Windows compatibility
+    wine  # Run Windows applications
+
     # Utilities
     htop
     btop
@@ -97,7 +109,7 @@
     enable = true;
     shellAliases = {
       # NixOS specific
-      update = "sudo nixos-rebuild switch --flake /etc/nixos#nixos";
+      update = "sudo nixos-rebuild switch --flake /home/markw#nixos";
       nixconf = "cd /etc/nixos";
       nixedit = "sudo vim /etc/nixos/configuration.nix";
       nixhome = "sudo vim /etc/nixos/home.nix";
