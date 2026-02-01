@@ -81,9 +81,11 @@
   # Git configuration
   programs.git = {
     enable = true;
-    userName = "Dragonixos";
-    userEmail = "markwelland06@gmail.com";
-    extraConfig = {
+    settings = {
+      user = {
+        name = "Dragonixos";
+        email = "markwelland06@gmail.com";
+      };
       credential = {
         helper = "/home/markw/git-credential-gh.sh";
       };
@@ -346,7 +348,7 @@
     workspace = {
       theme = "breeze-dark";
       colorScheme = "BreezeDark";
-      cursorTheme = "Bibata-Modern-Ice";
+      cursor.theme = "Bibata-Modern-Ice";
       iconTheme = "WhiteSur-dark";
       wallpaper = null;  # Set a path like "${./wallpaper.jpg}" if desired
     };
