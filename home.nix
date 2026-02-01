@@ -62,6 +62,10 @@
 
     # IDE
     antigravity-fhs  # FHS-wrapped version for better extension support
+    android-studio  # Android development IDE
+
+    # Office
+    libreoffice  # Office productivity suite
 
     # macOS-like themes and customization
     kdePackages.plasma-browser-integration
