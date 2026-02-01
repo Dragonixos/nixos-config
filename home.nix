@@ -337,6 +337,67 @@
     platformTheme.name = "kde";
   };
 
-  # You can configure other programs here
-  # For example: neovim, zsh, tmux, etc.
+  # KDE Plasma configuration via plasma-manager
+  programs.plasma = {
+    enable = true;
+
+    # Workspace settings
+    workspace = {
+      theme = "breeze-dark";
+      colorScheme = "BreezeDark";
+      cursorTheme = "Bibata-Modern-Ice";
+      iconTheme = "WhiteSur-dark";
+      wallpaper = null;  # Set a path like "${./wallpaper.jpg}" if desired
+    };
+
+    # Hot corners
+    hotkeys.commands = { };
+
+    # Panel configuration (taskbar)
+    panels = [
+      {
+        location = "bottom";
+        height = 44;
+        widgets = [
+          "org.kde.plasma.kickoff"
+          "org.kde.plasma.pager"
+          "org.kde.plasma.icontasks"
+          "org.kde.plasma.marginsseperator"
+          "org.kde.plasma.systemtray"
+          "org.kde.plasma.digitalclock"
+          "org.kde.plasma.showdesktop"
+        ];
+      }
+    ];
+
+    # Keyboard shortcuts
+    shortcuts = {
+      "kwin" = {
+        "Switch to Desktop 1" = "Meta+1";
+        "Switch to Desktop 2" = "Meta+2";
+        "Switch to Desktop 3" = "Meta+3";
+        "Switch to Desktop 4" = "Meta+4";
+        "Window Close" = "Meta+Q";
+        "Window Maximize" = "Meta+Up";
+        "Window Minimize" = "Meta+Down";
+      };
+      "plasmashell" = {
+        "show-on-mouse-pos" = "Meta+V";  # Clipboard popup
+      };
+    };
+
+    # KWin window manager settings
+    kwin = {
+      borderlessMaximizedWindows = false;
+      titlebarButtons = {
+        left = [ "on-all-desktops" "keep-above-windows" ];
+        right = [ "minimize" "maximize" "close" ];
+      };
+    };
+
+    # Spectacle (screenshot) settings
+    configFile = {
+      "spectaclerc"."General"."clipboardGroup" = "PostScreenshotCopyImage";
+    };
+  };
 }
