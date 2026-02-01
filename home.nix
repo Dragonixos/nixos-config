@@ -81,10 +81,11 @@
   # Git configuration
   programs.git = {
     enable = true;
-    settings = {
-      user = {
-        name = "Dragonixos";
-        email = "markwelland06@gmail.com";
+    userName = "Dragonixos";
+    userEmail = "markwelland06@gmail.com";
+    extraConfig = {
+      credential = {
+        helper = "/home/markw/git-credential-gh.sh";
       };
     };
   };
