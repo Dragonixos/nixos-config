@@ -1,0 +1,9 @@
+# Ignore everything except nix config files
+*
+!.gitignore
+!flake.nix
+!flake.lock
+!configuration.nix
+!hardware-configuration.nix
+!home.nix
+!git-credential-gh.sh
