@@ -340,16 +340,30 @@
     platformTheme.name = "kde";
   };
 
+  # Link WhiteSur KDE themes to local share for KDE to find them
+  xdg.dataFile = {
+    "plasma/desktoptheme/WhiteSur-dark" = {
+      source = "${pkgs.whitesur-kde}/share/plasma/desktoptheme/WhiteSur-dark";
+    };
+    "plasma/look-and-feel/com.github.vinceliuice.WhiteSur-dark" = {
+      source = "${pkgs.whitesur-kde}/share/plasma/look-and-feel/com.github.vinceliuice.WhiteSur-dark";
+    };
+    "color-schemes/WhiteSurDark.colors" = {
+      source = "${pkgs.whitesur-kde}/share/color-schemes/WhiteSurDark.colors";
+    };
+  };
+
   # KDE Plasma configuration via plasma-manager
   programs.plasma = {
     enable = true;
 
     # Workspace settings
     workspace = {
-      theme = "breeze-dark";
-      colorScheme = "BreezeDark";
+      theme = "WhiteSur-dark";
+      colorScheme = "WhiteSurDark";
       cursor.theme = "Bibata-Modern-Ice";
       iconTheme = "WhiteSur-dark";
+      lookAndFeel = "com.github.vinceliuice.WhiteSur-dark";
       wallpaper = null;  # Set a path like "${./wallpaper.jpg}" if desired
     };
 
