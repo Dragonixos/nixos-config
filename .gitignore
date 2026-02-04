@@ -7,3 +7,6 @@
 !hardware-configuration.nix
 !home.nix
 !git-credential-gh.sh
+!icons/
+!icons/tela/
+!icons/tela/**

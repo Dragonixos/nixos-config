@@ -4,6 +4,52 @@
 
 { config, pkgs, ... }:
 
+let
+  telaIcons = pkgs.stdenvNoCC.mkDerivation {
+    pname = "tela-icons-local";
+    version = "1";
+    src = ./icons/tela;
+    installPhase = ''
+      mkdir -p $out/share/icons
+      cp -r $src/* $out/share/icons/
+    '';
+  };
+  cqrlog = pkgs.stdenvNoCC.mkDerivation {
+    pname = "cqrlog-bin";
+    version = "2.5.2";
+    src = pkgs.fetchurl {
+      url = "https://github.com/ok2cqr/cqrlog/releases/download/v2.5.2/cqrlog_2.5.2_amd64.tar.gz";
+      sha256 = "1xa4d8csyfdlmb1k5rb0xaxvdldqhhz9wq6s415y5rl36myjzf0b";
+    };
+    nativeBuildInputs = [
+      pkgs.autoPatchelfHook
+    ];
+    buildInputs = [
+      pkgs.gtk2
+      pkgs.glib
+      pkgs.gdk-pixbuf
+      pkgs.pango
+      pkgs.cairo
+      pkgs.atk
+      pkgs.xorg.libX11
+      pkgs.xorg.libXext
+      pkgs.xorg.libXrender
+      pkgs.xorg.libXcursor
+      pkgs.xorg.libXrandr
+      pkgs.xorg.libXi
+      pkgs.xorg.libSM
+      pkgs.xorg.libICE
+      pkgs.mariadb-connector-c
+      pkgs.openssl
+      pkgs.zlib
+    ];
+    unpackPhase = "tar -xzf $src";
+    installPhase = ''
+      mkdir -p $out
+      cp -r cqrlog-2.5.2/usr/* $out/
+    '';
+  };
+in
 {
   imports =
     [ # Include the results of the hardware scan.
@@ -102,6 +148,41 @@
     dedicatedServer.openFirewall = true;
   };
 
+  # Enable TeamViewer daemon for incoming connections
+  services.teamviewer.enable = true;
+
+  # CQRLOG database
+  services.mysql = {
+    enable = true;
+    package = pkgs.mariadb;
+  };
+
+  # Containers
+  virtualisation.podman = {
+    enable = true;
+    dockerCompat = true;
+  };
+
+  # Flatpak
+  services.flatpak.enable = true;
+
+  # Ollama + Open-WebUI
+  services.ollama = {
+    enable = true;
+    package = pkgs.ollama-cuda;
+    host = "127.0.0.1";
+    port = 11434;
+  };
+
+  services.open-webui = {
+    enable = true;
+    host = "127.0.0.1";
+    port = 8080;
+    environment = {
+      OLLAMA_BASE_URL = "http://127.0.0.1:11434";
+    };
+  };
+
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
@@ -116,6 +197,51 @@
     google-chrome
     claude-code
     git
+    teamviewer
+    rpi-imager
+    caligula
+    telaIcons
+    cqrlog
+    hamlib
+    trustedqsl
+    podman-desktop
+    ffmpeg-full
+    # KDE applications
+    kdePackages.dolphin
+    kdePackages.konsole
+    kdePackages.kate
+    kdePackages.okular
+    kdePackages.gwenview
+    kdePackages.ark
+    kdePackages.spectacle
+    kdePackages.filelight
+    kdePackages.kcalc
+    kdePackages.kcharselect
+    kdePackages.kdeconnect-kde
+    kdePackages.kcron
+    kdePackages.ksystemlog
+    kdePackages.kio-extras
+    kdePackages.kamera
+    kdePackages.kdegraphics-thumbnailers
+    # KDE multimedia / creative
+    pkgs.krita
+    # KDE PIM
+    kdePackages.kmail
+    kdePackages.korganizer
+    kdePackages.kaddressbook
+    kdePackages.kontact
+    # KDE games
+    kdePackages.kpat
+    kdePackages.kmahjongg
+    kdePackages.ksudoku
+    kdePackages.kmines
+    kdePackages.kblocks
+    kdePackages.palapeli
+    kdePackages.katomic
+    kdePackages.lskat
+    kdePackages.granatier
+    kdePackages.kolf
+    kdePackages.konquest
   ];
 
   # Some programs need SUID wrappers, can be configured further or are

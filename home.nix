@@ -63,6 +63,9 @@
     # IDE
     antigravity-fhs  # FHS-wrapped version for better extension support
     android-studio  # Android development IDE
+    android-tools  # adb/fastboot
+    fvm  # Flutter SDK manager
+    temurin-bin  # JDK for Java/Android tooling
 
     # Office
     libreoffice  # Office productivity suite
@@ -105,6 +108,53 @@
       credential = {
         helper = "/home/markw/git-credential-gh.sh";
       };
+    };
+  };
+
+  # VS Code configuration
+  programs.vscode = {
+    enable = true;
+    package = pkgs.vscode;
+    profiles.default.extensions = with pkgs.vscode-extensions; [
+      ms-python.python
+      ms-toolsai.jupyter
+      rust-lang.rust-analyzer
+      ms-vscode.cpptools
+      redhat.vscode-yaml
+      dart-code.dart-code
+      dart-code.flutter
+      redhat.java
+      catppuccin.catppuccin-vsc
+      golang.go
+      eamodio.gitlens
+      ms-vscode-remote.remote-ssh
+      esbenp.prettier-vscode
+      dbaeumer.vscode-eslint
+      pkief.material-icon-theme
+    ];
+    profiles.default.userSettings = {
+      "editor.fontFamily" = "JetBrains Mono, Fira Code, monospace";
+      "editor.fontLigatures" = true;
+      "editor.fontSize" = 14;
+      "editor.lineHeight" = 22;
+      "editor.tabSize" = 2;
+      "editor.formatOnSave" = true;
+      "editor.bracketPairColorization.enabled" = true;
+      "editor.guides.bracketPairs" = true;
+      "editor.renderWhitespace" = "selection";
+      "editor.minimap.enabled" = false;
+      "workbench.colorTheme" = "Catppuccin Mocha";
+      "files.autoSave" = "onFocusChange";
+      "terminal.integrated.fontFamily" = "JetBrains Mono";
+      "terminal.integrated.fontSize" = 13;
+      "python.analysis.typeCheckingMode" = "basic";
+      "python.analysis.autoImportCompletions" = true;
+      "python.defaultInterpreterPath" = "${pkgs.python3}/bin/python3";
+      "rust-analyzer.checkOnSave.command" = "clippy";
+      "C_Cpp.intelliSenseEngine" = "Default";
+      "yaml.validate" = true;
+      "dart.flutterSdkPath" = "${config.home.homeDirectory}/.fvm/versions/stable";
+      "java.jdt.ls.java.home" = "${pkgs.temurin-bin}/lib/openjdk";
     };
   };
 
@@ -293,39 +343,6 @@
         ssh_only = false;
         style = "bold green";
         format = "[@$hostname]($style) ";
-      };
-    };
-  };
-
-  # VSCode configuration
-  programs.vscode = {
-    enable = true;
-    profiles.default = {
-      extensions = with pkgs.vscode-extensions; [
-        # Language support
-        ms-python.python
-        ms-vscode.cpptools
-        rust-lang.rust-analyzer
-        golang.go
-
-        # Git
-        eamodio.gitlens
-
-        # Utilities
-        ms-vscode-remote.remote-ssh
-        esbenp.prettier-vscode
-        dbaeumer.vscode-eslint
-
-        # Themes
-        pkief.material-icon-theme
-      ];
-      userSettings = {
-        "editor.fontSize" = 14;
-        "editor.fontFamily" = "'Fira Code', 'monospace'";
-        "editor.fontLigatures" = true;
-        "workbench.colorTheme" = "Default Dark Modern";
-        "editor.formatOnSave" = true;
-        "files.autoSave" = "afterDelay";
       };
     };
   };
