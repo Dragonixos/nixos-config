@@ -131,7 +131,7 @@ in
   users.users.markw = {
     isNormalUser = true;
     description = "mark welland";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "dialout" ];
     packages = with pkgs; [
       kdePackages.kate
     #  thunderbird
@@ -150,6 +150,11 @@ in
 
   # Enable TeamViewer daemon for incoming connections
   services.teamviewer.enable = true;
+
+  # Udev rules for FTDI USB serial (CAT)
+  services.udev.extraRules = ''
+    SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", MODE="0660", GROUP="dialout"
+  '';
 
   # CQRLOG database
   services.mysql = {
@@ -185,6 +190,13 @@ in
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
+
+  # Automatic cleanup of old generations
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 14d";
+  };
 
   # Enable flakes and nix-command
   nix.settings.experimental-features = [ "nix-command" "flakes" ];

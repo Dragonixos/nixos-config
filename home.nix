@@ -66,6 +66,10 @@
     android-tools  # adb/fastboot
     fvm  # Flutter SDK manager
     temurin-bin  # JDK for Java/Android tooling
+    # Ham radio - HF digital
+    wsjtx
+    fldigi
+    js8call
 
     # Office
     libreoffice  # Office productivity suite
