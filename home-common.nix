@@ -26,7 +26,7 @@
 
     # Terminal & Editors
     terminator  # Terminal emulator with tiling
-    neovim  # Modern Vim fork
+    # neovim configured via programs.neovim below
 
     # Windows compatibility
     wine  # Run Windows applications
@@ -115,6 +115,318 @@
         helper = "/home/markw/git-credential-gh.sh";
       };
     };
+  };
+
+  # IDE-style Neovim configuration
+  programs.neovim = {
+    enable = true;
+    defaultEditor = true;
+    viAlias = true;
+    vimAlias = true;
+    vimdiffAlias = true;
+
+    # Extra packages for LSP servers and tools
+    extraPackages = with pkgs; [
+      # Language servers
+      lua-language-server
+      nil  # Nix LSP
+      nodePackages.typescript-language-server
+      nodePackages.vscode-langservers-extracted  # HTML, CSS, JSON, ESLint
+      pyright  # Python LSP
+      rust-analyzer
+      gopls  # Go LSP
+      clang-tools  # C/C++ (clangd)
+      # Formatters
+      stylua
+      nixfmt-classic
+      prettierd
+      black
+      # Tools
+      ripgrep
+      fd
+    ];
+
+    plugins = with pkgs.vimPlugins; [
+      # Theme
+      {
+        plugin = catppuccin-nvim;
+        type = "lua";
+        config = ''
+          require("catppuccin").setup({
+            flavour = "mocha",
+            integrations = {
+              cmp = true,
+              gitsigns = true,
+              nvimtree = true,
+              treesitter = true,
+              telescope = { enabled = true },
+              which_key = true,
+              indent_blankline = { enabled = true },
+            },
+          })
+          vim.cmd.colorscheme "catppuccin"
+        '';
+      }
+
+      # File explorer
+      {
+        plugin = nvim-tree-lua;
+        type = "lua";
+        config = ''
+          require("nvim-tree").setup({
+            view = { width = 30 },
+            renderer = { 
+              icons = { show = { git = true, folder = true, file = true } }
+            },
+          })
+          vim.keymap.set("n", "<leader>e", ":NvimTreeToggle<CR>", { silent = true })
+        '';
+      }
+      nvim-web-devicons
+
+      # Fuzzy finder
+      {
+        plugin = telescope-nvim;
+        type = "lua";
+        config = ''
+          local telescope = require("telescope")
+          telescope.setup({
+            defaults = {
+              file_ignore_patterns = { "node_modules", ".git/" },
+            },
+          })
+          vim.keymap.set("n", "<leader>ff", ":Telescope find_files<CR>", { silent = true })
+          vim.keymap.set("n", "<leader>fg", ":Telescope live_grep<CR>", { silent = true })
+          vim.keymap.set("n", "<leader>fb", ":Telescope buffers<CR>", { silent = true })
+          vim.keymap.set("n", "<leader>fh", ":Telescope help_tags<CR>", { silent = true })
+        '';
+      }
+      plenary-nvim
+
+      # Treesitter for syntax highlighting
+      {
+        plugin = nvim-treesitter.withAllGrammars;
+        type = "lua";
+        config = ''
+          require("nvim-treesitter.configs").setup({
+            highlight = { enable = true },
+            indent = { enable = true },
+          })
+        '';
+      }
+
+      # LSP configuration
+      {
+        plugin = nvim-lspconfig;
+        type = "lua";
+        config = ''
+          local lspconfig = require("lspconfig")
+          local capabilities = require("cmp_nvim_lsp").default_capabilities()
+
+          -- Language servers
+          lspconfig.lua_ls.setup({ capabilities = capabilities })
+          lspconfig.nil_ls.setup({ capabilities = capabilities })
+          lspconfig.ts_ls.setup({ capabilities = capabilities })
+          lspconfig.pyright.setup({ capabilities = capabilities })
+          lspconfig.rust_analyzer.setup({ capabilities = capabilities })
+          lspconfig.gopls.setup({ capabilities = capabilities })
+          lspconfig.clangd.setup({ capabilities = capabilities })
+          lspconfig.html.setup({ capabilities = capabilities })
+          lspconfig.cssls.setup({ capabilities = capabilities })
+          lspconfig.jsonls.setup({ capabilities = capabilities })
+
+          -- LSP keybindings
+          vim.keymap.set("n", "gd", vim.lsp.buf.definition)
+          vim.keymap.set("n", "gD", vim.lsp.buf.declaration)
+          vim.keymap.set("n", "gr", vim.lsp.buf.references)
+          vim.keymap.set("n", "gi", vim.lsp.buf.implementation)
+          vim.keymap.set("n", "K", vim.lsp.buf.hover)
+          vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename)
+          vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action)
+          vim.keymap.set("n", "<leader>f", function() vim.lsp.buf.format({ async = true }) end)
+          vim.keymap.set("n", "[d", vim.diagnostic.goto_prev)
+          vim.keymap.set("n", "]d", vim.diagnostic.goto_next)
+        '';
+      }
+
+      # Autocompletion
+      {
+        plugin = nvim-cmp;
+        type = "lua";
+        config = ''
+          local cmp = require("cmp")
+          local luasnip = require("luasnip")
+
+          cmp.setup({
+            snippet = {
+              expand = function(args)
+                luasnip.lsp_expand(args.body)
+              end,
+            },
+            mapping = cmp.mapping.preset.insert({
+              ["<C-b>"] = cmp.mapping.scroll_docs(-4),
+              ["<C-f>"] = cmp.mapping.scroll_docs(4),
+              ["<C-Space>"] = cmp.mapping.complete(),
+              ["<C-e>"] = cmp.mapping.abort(),
+              ["<CR>"] = cmp.mapping.confirm({ select = true }),
+              ["<Tab>"] = cmp.mapping(function(fallback)
+                if cmp.visible() then
+                  cmp.select_next_item()
+                elseif luasnip.expand_or_jumpable() then
+                  luasnip.expand_or_jump()
+                else
+                  fallback()
+                end
+              end, { "i", "s" }),
+              ["<S-Tab>"] = cmp.mapping(function(fallback)
+                if cmp.visible() then
+                  cmp.select_prev_item()
+                elseif luasnip.jumpable(-1) then
+                  luasnip.jump(-1)
+                else
+                  fallback()
+                end
+              end, { "i", "s" }),
+            }),
+            sources = cmp.config.sources({
+              { name = "nvim_lsp" },
+              { name = "luasnip" },
+              { name = "buffer" },
+              { name = "path" },
+            }),
+          })
+        '';
+      }
+      cmp-nvim-lsp
+      cmp-buffer
+      cmp-path
+      luasnip
+      cmp_luasnip
+      friendly-snippets
+
+      # Git integration
+      {
+        plugin = gitsigns-nvim;
+        type = "lua";
+        config = ''
+          require("gitsigns").setup({
+            signs = {
+              add = { text = "│" },
+              change = { text = "│" },
+              delete = { text = "_" },
+              topdelete = { text = "‾" },
+              changedelete = { text = "~" },
+            },
+          })
+        '';
+      }
+
+      # Statusline
+      {
+        plugin = lualine-nvim;
+        type = "lua";
+        config = ''
+          require("lualine").setup({
+            options = {
+              theme = "catppuccin",
+              component_separators = { left = "", right = "" },
+              section_separators = { left = "", right = "" },
+            },
+          })
+        '';
+      }
+
+      # Which-key for keybinding hints
+      {
+        plugin = which-key-nvim;
+        type = "lua";
+        config = ''
+          require("which-key").setup({})
+        '';
+      }
+
+      # Indent guides
+      {
+        plugin = indent-blankline-nvim;
+        type = "lua";
+        config = ''
+          require("ibl").setup({})
+        '';
+      }
+
+      # Auto pairs
+      {
+        plugin = nvim-autopairs;
+        type = "lua";
+        config = ''
+          require("nvim-autopairs").setup({})
+        '';
+      }
+
+      # Comment toggling
+      {
+        plugin = comment-nvim;
+        type = "lua";
+        config = ''
+          require("Comment").setup({})
+        '';
+      }
+
+      # Buffer line (tabs)
+      {
+        plugin = bufferline-nvim;
+        type = "lua";
+        config = ''
+          require("bufferline").setup({
+            options = {
+              diagnostics = "nvim_lsp",
+              separator_style = "slant",
+            },
+          })
+          vim.keymap.set("n", "<leader>bp", ":BufferLineCyclePrev<CR>", { silent = true })
+          vim.keymap.set("n", "<leader>bn", ":BufferLineCycleNext<CR>", { silent = true })
+          vim.keymap.set("n", "<leader>bc", ":bdelete<CR>", { silent = true })
+        '';
+      }
+    ];
+
+    extraLuaConfig = ''
+      -- General settings
+      vim.g.mapleader = " "
+      vim.g.maplocalleader = " "
+      
+      vim.opt.number = true
+      vim.opt.relativenumber = true
+      vim.opt.mouse = "a"
+      vim.opt.clipboard = "unnamedplus"
+      vim.opt.expandtab = true
+      vim.opt.shiftwidth = 2
+      vim.opt.tabstop = 2
+      vim.opt.smartindent = true
+      vim.opt.wrap = false
+      vim.opt.ignorecase = true
+      vim.opt.smartcase = true
+      vim.opt.termguicolors = true
+      vim.opt.signcolumn = "yes"
+      vim.opt.updatetime = 250
+      vim.opt.timeoutlen = 300
+      vim.opt.splitright = true
+      vim.opt.splitbelow = true
+      vim.opt.cursorline = true
+      vim.opt.scrolloff = 8
+      
+      -- Better window navigation
+      vim.keymap.set("n", "<C-h>", "<C-w>h")
+      vim.keymap.set("n", "<C-j>", "<C-w>j")
+      vim.keymap.set("n", "<C-k>", "<C-w>k")
+      vim.keymap.set("n", "<C-l>", "<C-w>l")
+      
+      -- Clear search highlighting
+      vim.keymap.set("n", "<Esc>", ":nohlsearch<CR>", { silent = true })
+      
+      -- Save with Ctrl+S
+      vim.keymap.set({ "n", "i", "v" }, "<C-s>", "<Cmd>write<CR>", { silent = true })
+    '';
   };
 
   # VS Code configuration
