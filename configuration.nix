@@ -127,16 +127,72 @@ in
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
+  # Enable OpenGL / Hardware Graphics
+  hardware.graphics = {
+    enable = true;
+    enable32Bit = true;
+    extraPackages = with pkgs; [
+      libvdpau-va-gl
+      nvidia-vaapi-driver
+    ];
+  };
+
+  # Load nvidia driver for Xorg and Wayland
+  services.xserver.videoDrivers = ["nvidia"];
+
+  hardware.nvidia = {
+    # Modesetting is required.
+    modesetting.enable = true;
+
+    # Nvidia power management. Experimental, and can cause sleep/suspend to fail.
+    # Enable this if you have graphical corruption issues or application crashes after waking
+    # up from sleep. This fixes it by saving the entire VRAM memory to /tmp/ instead
+    # of just the bare essentials.
+    powerManagement.enable = false;
+
+    # Fine-grained power management. Turns off GPU when not in use.
+    # Experimental and only works on modern Nvidia GPUs (Turing or newer).
+    powerManagement.finegrained = false;
+
+    # Use the NVidia open source kernel module (not to be confused with the
+    # independent third-party "nouveau" open source driver).
+    # Support is limited to the Turing and later architectures. Full list of
+    # supported GPUs is at:
+    # https://github.com/NVIDIA/open-gpu-kernel-modules#compatible-gpus
+    # Only available from driver 515.43.04+
+    # Currently alpha-quality/buggy, so false is currently the recommended setting.
+    open = false;
+
+    # Enable the Nvidia settings menu,
+    # accessible via `nvidia-settings`.
+    nvidiaSettings = true;
+
+    # Optionally, you may need to select the appropriate driver version for your specific GPU.
+    package = config.boot.kernelPackages.nvidiaPackages.stable;
+  };
+
   # Define a user account. Don't forget to set a password with 'passwd'.
   users.users.markw = {
     isNormalUser = true;
     description = "mark welland";
-    extraGroups = [ "networkmanager" "wheel" "dialout" ];
+    shell = pkgs.fish;
+    extraGroups = [ "networkmanager" "wheel" "dialout" "kvm" "libvirtd" "video" "audio" "input" "lp" "scanner" "render" ];
     packages = with pkgs; [
       kdePackages.kate
     #  thunderbird
     ];
   };
+
+  users.users.mark = {
+    isNormalUser = true;
+    description = "mark";
+    extraGroups = [ "networkmanager" "wheel" "dialout" "kvm" "libvirtd" "video" "audio" "input" "lp" "scanner" "render" ];
+    initialPassword = "changeme";
+    createHome = true;
+  };
+
+  # Enable Fish shell (required to use as login shell)
+  programs.fish.enable = true;
 
   # Install firefox.
   programs.firefox.enable = true;
@@ -162,10 +218,31 @@ in
     package = pkgs.mariadb;
   };
 
-  # Containers
+  # Containers (rootless)
+  virtualisation.containers.enable = true;
+  virtualisation.containers.registries.search = [
+    "docker.io"
+    "quay.io"
+    "ghcr.io"
+  ];
   virtualisation.podman = {
     enable = true;
     dockerCompat = true;
+    defaultNetwork.settings.dns_enabled = true;
+  };
+
+  # OpenClaw Bot Container
+  # OpenClaw Bot Container removed in favor of native flake service
+
+  # KVM / libvirt
+  virtualisation.libvirtd.enable = true;
+  programs.virt-manager.enable = true;
+
+  # Hyprland (Wayland)
+  programs.hyprland.enable = true;
+  xdg.portal = {
+    enable = true;
+    extraPortals = [ pkgs.xdg-desktop-portal-hyprland ];
   };
 
   # Flatpak
@@ -175,9 +252,11 @@ in
   services.ollama = {
     enable = true;
     package = pkgs.ollama-cuda;
-    host = "127.0.0.1";
+    host = "0.0.0.0";
     port = 11434;
   };
+  
+  networking.firewall.allowedTCPPorts = [ 11434 ];
 
   services.open-webui = {
     enable = true;
@@ -218,6 +297,18 @@ in
     trustedqsl
     podman-desktop
     ffmpeg-full
+    # Hyprland extras
+    waybar
+    hyprpaper
+    hyprlock
+    hypridle
+    swaynotificationcenter
+    wofi
+    grim
+    slurp
+    wl-clipboard
+    pavucontrol
+    networkmanagerapplet
     # KDE applications
     kdePackages.dolphin
     kdePackages.konsole
