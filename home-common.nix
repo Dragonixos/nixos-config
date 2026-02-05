@@ -138,7 +138,7 @@
       clang-tools  # C/C++ (clangd)
       # Formatters
       stylua
-      nixfmt-classic
+      nixfmt
       prettierd
       black
       # Tools
@@ -203,15 +203,16 @@
       }
       plenary-nvim
 
-      # Treesitter for syntax highlighting
+      # Treesitter for syntax highlighting (grammars bundled via withAllGrammars)
       {
         plugin = nvim-treesitter.withAllGrammars;
         type = "lua";
         config = ''
-          require("nvim-treesitter.configs").setup({
-            highlight = { enable = true },
-            indent = { enable = true },
-          })
+          -- Treesitter highlighting is auto-enabled with withAllGrammars
+          -- Just ensure it's active
+          vim.opt.foldmethod = "expr"
+          vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
+          vim.opt.foldenable = false
         '';
       }
 
@@ -390,7 +391,7 @@
       }
     ];
 
-    extraLuaConfig = ''
+    initLua = ''
       -- General settings
       vim.g.mapleader = " "
       vim.g.maplocalleader = " "
